@@ -66,7 +66,7 @@ def MontaMatriz(lat, long):
     yNp = np.array(y).reshape((eixoX, eixoY))
     matrizNp = np.array(matriz).reshape((eixoX, eixoY))
     matrizNormalizada = matrizNp - matrizNp.mean()
-    return matrizNormalizada, xNp, yNp
+    return xNp, yNp,matrizNormalizada
 
 def SalvaInformacoes(dadosMatrizes,dadosFits):
     dados = {
@@ -92,15 +92,16 @@ def SalvaInformacoes(dadosMatrizes,dadosFits):
 
 # codigo principal
 start = timeit.default_timer()
+
 terrenosLoc = [[45.589270491935146, -111.53715889768334]]
 dadosMatrizes = []
 dadosFits = []
 for terreno in terrenosLoc:
-    matrizNp, XNp, YNp = MontaMatriz(terreno[0], terreno[1])
-    matrizNpTransposta = np.transpose(matrizNp)
-    dadosMatrizes.append([matrizNp , matrizNpTransposta , XNp , YNp ])
-    fit = VetorizaLinhasFit(matrizNp)
-    fitTransposta = VetorizaLinhasFit(matrizNpTransposta)
+    xNp, yNp,zNp = MontaMatriz(terreno[0], terreno[1])
+    zNpTransposta = np.transpose(zNp)
+    dadosMatrizes.append([zNp , zNpTransposta , xNp , yNp ])
+    fit = VetorizaLinhasFit(zNp)
+    fitTransposta = VetorizaLinhasFit(zNpTransposta)
     dadosFits.append([fit, fitTransposta])
     print(dadosFits)
 
@@ -108,5 +109,4 @@ stop = timeit.default_timer()
 print('Time: ', stop - start)
 
 SalvaInformacoes(dadosMatrizes,dadosFits)
-z = matrizNp
-#PlotaSuperficie(XNp, YNp, z)
+PlotaSuperficie(xNp, yNp, zNp)
