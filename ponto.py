@@ -6,8 +6,8 @@ class ponto:
 
     def __init__(self,x,y,z):
         self.x=x
-        self.y=y
-        self.z=z
+        self.y=z
+        self.z=y
 
     def AtualizaCoordenadas(self,x,y,z):
         self.x = x
