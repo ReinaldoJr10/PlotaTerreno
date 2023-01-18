@@ -43,17 +43,20 @@ class BauPontos:
         auxNormal2 = calculaVetorNormal(self.getPonto(i, j).getXyz(), self.getPonto(i + 1, j).getXyz(), self.getPonto(i + 1, j + 1).getXyz())
         return "".join([self.getPonto(i,j).verticeString()+self.getPonto(i,j + 1).verticeString(),self.getPonto(i + 1,j + 1).verticeString(),f'vn {auxNormal1[0]} {auxNormal1[1]} {auxNormal1[2]}\nf -3//{ind} -2//{ind} -1//{ind}\n',self.getPonto(i,j).verticeString(),self.getPonto(i + 1,j).verticeString(),self.getPonto(i + 1,j + 1).verticeString(),f'vn {auxNormal2[0]} {auxNormal2[1]} {auxNormal2[2]}\nf -3//{ind+1} -2//{ind+1} -1//{ind+1}\n'])
 
+
 def gTriangulo(args):
     p1,p2,p3,p4,ind=args
-    auxNormal1 = calculaVetorNormal(p1.getXyz(), p2.getXyz(),p3.getXyz())
-    auxNormal2 = calculaVetorNormal(p1.getXyz(), p4.getXyz(),p3.getXyz())
+    auxNormal1 = calculaVetorNormal(p1.getXyz(), p2.getXyz(),p3.getXyz(),p4.getXyz())
     return "".join([p1.verticeString(), p2.verticeString(), p3.verticeString(),
                     f'vn {auxNormal1[0]} {auxNormal1[1]} {auxNormal1[2]}\nf -3//{ind} -2//{ind} -1//{ind}\n',
                     p1.verticeString(), p4.verticeString(), p3.verticeString(),
-                    f'vn {auxNormal2[0]} {auxNormal2[1]} {auxNormal2[2]}\nf -3//{ind + 1} -2//{ind + 1} -1//{ind + 1}\n'])
+                    f'vn {auxNormal1[3]} {auxNormal1[4]} {auxNormal1[5]}\nf -3//{ind + 1} -2//{ind + 1} -1//{ind + 1}\n'])
 
 @jit(nopython=True)
-def calculaVetorNormal(pontoA,pontoB,pontoC):
+def calculaVetorNormal(pontoA,pontoB,pontoC,pontoD):
         prodVet=np.cross(pontoB-pontoA, pontoC-pontoA)
+        prodVet2=np.cross(pontoD-pontoA, pontoC-pontoA)
         normal=prodVet/np.linalg.norm(prodVet)
-        return normal
+        normal2 = prodVet2 / np.linalg.norm(prodVet2)
+        normalF = np.array([normal[0],normal[1],normal[2],normal2[0],normal2[1],normal2[2]])
+        return normalF

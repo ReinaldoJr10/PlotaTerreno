@@ -12,14 +12,14 @@ def exportaModeloObj(Pontos:ponto.BauPontos):
             indJ=Pontos.getTamanhoJ(i)-1
             js=np.arange(indJ)
             ind = [(j * 2) + (i * indJ)*2 + 1 for j in js]
-            print(ind)
             pts = [(i,j,ind[j]) for j in js]
             args = [(pontos.getPonto(pt[0],pt[1]),pontos.getPonto(pt[0],pt[1]+1),pontos.getPonto(pt[0]+1,pt[1]+1),pontos.getPonto(pt[0]+1,pt[1]),pt[2]) for pt in pts]
-            #with Pool(1) as p:
-             #   result=p.map(ponto.gTriangulo,args)
-            #print(result)
-            for j in range(indJ-1):
-               arq.write(Pontos.geraTriangulos(i, i * (indJ-1)*2, j))
+            #p=Pool(processes=nucleos)
+            #result=p.imap(ponto.gTriangulo,args)
+            #for j in range(indJ-1):
+               #arq.write(Pontos.geraTriangulos(i, i * (indJ-1)*2, j))
+            strings = [ponto.gTriangulo(ele) for ele in args]
+            arq.writelines(strings)
     print("Modelo gerado!")
 
 def PlotaSuperficie(x, y, z):
@@ -218,7 +218,7 @@ if __name__=='__main__':
 
     SalvaInformacoes(dadosMatrizes)
 
-    x2,y2,z2=AumentaDetalhesTerreno(xNp,yNp,zFinal,3)
+    x2,y2,z2=AumentaDetalhesTerreno(xNp,yNp,zFinal,2)
 
     pontos=ponto.BauPontos(x2,y2,z2)
     start = timeit.default_timer()
