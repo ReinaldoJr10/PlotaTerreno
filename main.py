@@ -4,6 +4,7 @@ from multiprocessing import Pool, cpu_count
 import ponto
 from numba import jit
 
+
 def exportaModeloObj(Pontos:ponto.BauPontos):
     print("Gerando modelo obj")
     with open("modelo.obj", "w") as arq:
@@ -156,14 +157,13 @@ def modificaMatriz(mat,debug):
                     mat[i+1][j+1] = mat[i][j+1]
                     mat[i+1][j] = mat[i][j]
     return mat
-
 def PreencheMatrizesAumentadas(x1,y1,z1):
     x1=modificaMatriz(x1,1)
     y1=modificaMatriz(y1,2)
     z1=modificaMatriz(z1,3)
     return x1,y1,z1
 
-
+@jit(nopython=True)
 def interpola2Vetores(vet1, vet2, valor):
     vetResNp = (vet1 * valor) + (vet2 * (1 - valor))
     return vetResNp
@@ -184,8 +184,47 @@ def AumentaDetalhesTerreno(x,y,z,qtd):
     for i in range(0,qtd):
         xA,yA,zA=aumentaMatrizes(xA,yA,zA)
         xA,yA,zA=PreencheMatrizesAumentadas(xA,yA,zA)
-        print(f'- {i}')
+        print(f'- {i+1}')
     return xA,yA,zA
+
+@jit(nopython=True)
+def func1(x,y,ind):
+    return np.cos(x*y*ind)+np.sin(x*y*ind)
+
+def func2(x):
+    return x+1
+def CalculaPontosFuncao(eixox,eixoy):
+    x=[]
+    y=[]
+    z=[]
+    for i in range(eixox):
+        jInd=[j for j in range(eixoy)]
+        xyInd=[(i,j,np.random.normal(0,j)) for j in jInd]
+        with Pool() as p:
+            res=p.map(func2,jInd)
+        for j in range(eixoy):
+            x.append(i)
+            y.append(j)
+            z.append(func1(i,j,np.random.normal(0,j)))
+
+    return x,y,z
+
+
+def camadasGeracaoMatematica(eixox,eixoy,qtd):
+    zT=[]
+    for i in range(2**qtd):
+        x,y,z=CalculaPontosFuncao(eixox,eixoy)
+        if(i==1):
+            xT=np.array(x).reshape(eixox,eixoy)
+            yT=np.array(y).reshape(eixox,eixoy)
+        zT.append(np.array(z).reshape(eixox,eixoy))
+    zFinal=interpolaMatrizZ(zT,0,0.5,0,qtd)
+    print(zFinal)
+
+    return xT,yT,zFinal
+
+def normaliza(vet):
+    return vet/np.linalg.norm(vet)
 
 # codigo principal
 if __name__=='__main__':
@@ -213,14 +252,21 @@ if __name__=='__main__':
         zNpTransposta = np.transpose(zNp)
         dadosMatrizes.append([zNp, zNpTransposta, xNp, yNp])
 
+    xM,yM,zM=camadasGeracaoMatematica(eixoX,eixoY,numE)
+
     print("Interpolando...")
     zFinal=interpolaMatrizZ(dadosZ,0,valorInterp,0,numE)
 
+    xM2, yM2, zM2 = AumentaDetalhesTerreno(xM,yM,zM,3)
+
+
     SalvaInformacoes(dadosMatrizes)
 
-    x2,y2,z2=AumentaDetalhesTerreno(xNp,yNp,zFinal,2)
+    x2,y2,z2=AumentaDetalhesTerreno(xNp,yNp,zFinal,3)
 
-    pontos=ponto.BauPontos(x2,y2,z2)
+    #PlotaSuperficie(xM2, yM2, normaliza(interpola2Vetores(zM2, z2, 0.5)))
+
+    pontos=ponto.BauPontos(x2,y2,interpola2Vetores(zM2, z2, 1))
     start = timeit.default_timer()
     exportaModeloObj(pontos)
 
